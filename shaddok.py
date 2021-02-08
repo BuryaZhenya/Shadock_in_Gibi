@@ -8,6 +8,7 @@ from DEBUG import *
 import GameObject as gobj
 
 from shaddok_init import *
+from title import *
 
 
 pi = 3.1415926
@@ -17,6 +18,16 @@ gmObjects = {}
 
 def radian(degree):
     return (pi * degree) / 180
+
+
+def time2str(time):
+    r = time % 100
+    if r < 10:
+        s = "0" + str(r)
+    else:
+        s = str(r)
+
+    return str(time // 100) + "." + s
 
 
 class GameArea:
@@ -36,6 +47,9 @@ class GameArea:
 
         self.area_view_offset_X = game_params['game_area_window']['OFFSET_X']
         self.area_view_offset_Y = game_params['game_area_window']['OFFSET_Y']
+
+        self.game_window_size = self.game_windowX, self.game_windowY = game_params['window']['SIZE_X'], game_params['window']['SIZE_Y']
+        self.game_window_info = (0, 0, self.game_windowX, 100)
 
         # Игровое пространство
         self.area = [[{'code': (cdFREE)} for i in range(self.area_sizeX)] for j in range(self.area_sizeY)]
@@ -172,19 +186,18 @@ class GameArea:
         self.area_view = (x, y)
 
     def area_init(self):
-        pg.init()
-        self.window = pg.display.set_mode((game_params['window']['SIZE_X'], game_params['window']['SIZE_Y']))
+        self.window = pg.display.set_mode(self.game_window_size)
         self.window.fill(GREEN)
-        self.text = pg.Surface((game_params['window']['SIZE_X'], 100))
-        self.text.fill(GREY)
+        self.window.fill(GREY, self.game_window_info)
         pg.display.update()
 
     def area_text(self, text, color):
-        self.text.fill(GREY)
+        self.window.fill(GREY, self.game_window_info)
         self.font = pg.font.SysFont('arial', 48)
-        self.text = self.font.render(text, True, color)
+        text_image = self.font.render(text, True, color)
+        self.window.blit(text_image, (50, 10))
 
-    def area_show(self, text):
+    def area_show(self, texts):
         global gmObjects
 
         self.window.fill(GREEN)
@@ -196,6 +209,13 @@ class GameArea:
                     obj = sq['obj']
                     obj.set_view_pos((self.area_view_offset_X + i * self.area_scaleX, self.area_view_offset_Y + j * self.area_scaleY))
                     obj.show(self.window)
+
+        text = ""
+        for t in texts:
+            text += t['text']
+            for i in range(len(t['text']) + 1, t.get('size', len(t['text']))):
+                text += " "
+            print("[" + text + "]")
 
         self.area_text(text, BLUE)
 
@@ -211,7 +231,7 @@ class Game():
         self.game_time = MAX_GAME_TIME
 
         self.area.area_init()
-        self.area.area_show("  Time: " + str(self.game_time) + "        Score: " + str(self.score))
+        self.area.area_show([{'text':"  Время: " + time2str(self.game_time), 'size':20}, {'text':"Лечебных цветов: " + str(self.score)}])
 
     def action(self):
         global gmObjects
@@ -314,7 +334,8 @@ class Game():
                             pl.set_pos(pos)
 
             self.area.area_align(gmObjects['Player'])
-            self.area.area_show("  Time: " + str(self.game_time) + "        Score: " + str(self.score))
+             
+            self.area.area_show([{'text':"  Время: " + time2str(self.game_time), 'size':20}, {'text':"Лечебных цветов: " + str(self.score)}])
 
             self.game_time -= 1
             if self.game_time == 0:
@@ -327,7 +348,7 @@ class Game():
 
 # Main
 
-debugOn()
+debugOff()
 debug("Start")
 
 debug(game_params['dirs']['gameDir'])
@@ -336,6 +357,10 @@ debug(game_params['dirs']['soundDir'])
 debug(game_params['dirs']['spriteDir'])
 
 #debug((gobj_params, game_params))
+
+pg.init()
+
+GameIntro()
 
 g = Game(game_params, gobj_params)
 g.action()

@@ -56,9 +56,9 @@ game_params = {
     'game_area_view': game_area_view
 }
 
-# Длительность до смены цвета фона и последовательность цветов фона
-NEXT_ACTION_TIME = 100
-MAX_GAME_TIME = 10000
+# Длительность событий
+NEXT_ACTION_TIME = 300
+MAX_GAME_TIME = 50000
 backColors = (YELLOW, BLUE, CYAN, MAGENTA, RED)
 
 # Коды предметов и персонажей
